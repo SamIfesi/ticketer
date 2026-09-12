@@ -369,12 +369,12 @@ export default function AppRoutes() {
           }
         />
 
-        {/* ── NEW: Organizer only ── */}
+        {/* ── Organizer PAYMENTS only ── */}
         <Route
           path="/organizer/payment-details"
           element={
             <ProtectedRoute>
-              <RoleRoute allowed={[ROLES.ORGANIZER, ROLES.DEV]}>
+              <RoleRoute allowed={[ROLES.ORGANIZER, ROLES.DEV, ROLES.ADMIN]}>
                 <OrganizerPaymentPage />
               </RoleRoute>
             </ProtectedRoute>
@@ -384,7 +384,7 @@ export default function AppRoutes() {
           path="/organizer/transactions"
           element={
             <ProtectedRoute>
-              <RoleRoute allowed={[ROLES.ORGANIZER, ROLES.DEV]}>
+              <RoleRoute allowed={[ROLES.ORGANIZER, ROLES.DEV, ROLES.ADMIN]}>
                 <OrganizerTransactionsPage />
               </RoleRoute>
             </ProtectedRoute>
