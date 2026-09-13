@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Pencil, AlertTriangle } from 'lucide-react';
 import { useOrganizerEvents } from '../../hooks/useOrganizerEvents';
 import { useOrganizerPayment } from '../../hooks/useOrganizerPayment';
@@ -18,6 +18,7 @@ export default function EditEventPage() {
   const { slug } = useParams();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [categories, setCategories] = useState([]);
+  const navigate = useNavigate();
 
   const {
     event,
@@ -74,7 +75,10 @@ export default function EditEventPage() {
 
   async function handleSubmit(formData) {
     await updateEvent(event.id, formData, {
-      onSuccess: () => fetchMyEvent(slug),
+      onSuccess: () => {
+        (fetchMyEvent(slug), 
+        navigate(`/organizer/events/${event.slug}`));
+      },
     });
   }
 
