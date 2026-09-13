@@ -76,8 +76,8 @@ export default function EditEventPage() {
   async function handleSubmit(formData) {
     await updateEvent(event.id, formData, {
       onSuccess: () => {
-        (fetchMyEvent(slug), 
-        navigate(`/organizer/events/${event.slug}`));
+        fetchMyEvent(slug);
+        navigate(`/organizer/events/${event.slug}`);
       },
     });
   }
