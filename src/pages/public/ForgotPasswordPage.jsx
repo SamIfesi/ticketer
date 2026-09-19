@@ -4,9 +4,16 @@ import { Mail, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
+import { formatCountdown } from '../../utils/formatCountdown';
 
 export default function ForgotPasswordPage() {
-  const { loading, fieldErrors, forgotPassword } = useAuth();
+  const {
+    loading,
+    fieldErrors,
+    forgotPassword,
+    isRateLimited,
+    rateLimitSeconds,
+  } = useAuth();
 
   const [email, setEmail] = useState('');
 
@@ -17,7 +24,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="min-h-screen flex items-start justify-center bg-main-bg px-8 py-12">
-      <div className="w-full max-w-[420px]">
+      <div className="w-full max-w-105">
         <Link
           to="/login"
           className="inline-flex items-center gap-1.5 mb-4 text-sm font-medium text-secondary hover:text-primary transition-colors duration-150"
@@ -33,7 +40,7 @@ export default function ForgotPasswordPage() {
           <h1 className="text-2xl font-bold text-primary tracking-tight">
             Forgot your password?
           </h1>
-          <p className="mt-2 text-sm text-secondary text-center leading-relaxed max-w-[300px]">
+          <p className="mt-2 text-sm text-secondary text-center leading-relaxed max-w-75">
             Enter your email and we'll send you a 6-digit verification code.
           </p>
         </div>
@@ -60,10 +67,12 @@ export default function ForgotPasswordPage() {
             variant="primary"
             size="md"
             loading={loading}
-            disabled={!email}
+            disabled={!email || isRateLimited}
             className="w-full mt-1"
           >
-            Send code
+            {isRateLimited
+              ? `Try again in ${formatCountdown(rateLimitSeconds)}`
+              : 'Send code'}
           </Button>
         </form>
       </div>
