@@ -19,6 +19,7 @@ import Sidebar from '../../components/layout/Sidebar';
 import Footer from '../../components/layout/Footer';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
+import PayoutPlanBadge from '../../components/ui/PayoutPlanBadge';
 import Pagination from '../../components/ui/Pagination';
 import { ConfirmModal } from '../../components/ui/Modal';
 
@@ -162,13 +163,18 @@ function PendingPayoutCard({
               {payout.event_title}
             </p>
             <p className="text-xs text-muted mt-0.5">
-              Ended{' '}
+              {new Date(payout.event_end_date) > new Date()
+                ? 'Ends'
+                : 'Ended'}{' '}
               {payout.event_end_date
                 ? formatShortDate(payout.event_end_date)
                 : '—'}
             </p>
           </div>
-          <PayoutStatusBadge status={payout.payout_status} />
+          <div className="flex flex-col items-end gap-1.5 shrink-0">
+            <PayoutStatusBadge status={payout.payout_status} />
+            <PayoutPlanBadge plan={payout.payout_plan} />
+          </div>
         </div>
 
         {/* Organizer */}
@@ -213,6 +219,33 @@ function PendingPayoutCard({
             </div>
           ))}
         </div>
+
+        {/* Already received vs still pending (lifetime organizer_amount is a running total) */}
+        {(() => {
+          const paidOut = Number(payout.total_paid_out ?? 0);
+          const owed = Number(payout.organizer_amount ?? 0);
+          const remaining = Math.max(0, owed - paidOut);
+          return (
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              <div className="bg-main-bg rounded-btn p-3 text-center">
+                <p className="text-sm font-black text-primary">
+                  {formatCurrency(paidOut)}
+                </p>
+                <p className="text-[10px] text-muted mt-0.5">
+                  Already received
+                </p>
+              </div>
+              <div className="bg-main-bg rounded-btn p-3 text-center">
+                <p className="text-sm font-black text-warning">
+                  {formatCurrency(remaining)}
+                </p>
+                <p className="text-[10px] text-muted mt-0.5">
+                  Still pending
+                </p>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Hold until */}
         <div className="flex items-center gap-1.5 mb-4">
@@ -393,6 +426,9 @@ function AllPayoutsTab({
                             ? formatShortDate(p.event_end_date)
                             : '—'}
                         </p>
+                        <div className="mt-1">
+                          <PayoutPlanBadge plan={p.payout_plan} />
+                        </div>
                       </td>
                       <td className="px-4 py-3.5">
                         <p className="text-xs font-semibold text-primary truncate max-w-27.5">
@@ -411,6 +447,11 @@ function AllPayoutsTab({
                         <span className="text-sm font-bold text-success">
                           {formatCurrency(p.organizer_amount ?? 0)}
                         </span>
+                        {p.total_paid_out !== undefined && (
+                          <p className="text-[11px] text-muted mt-0.5">
+                            {formatCurrency(p.total_paid_out ?? 0)} sent
+                          </p>
+                        )}
                       </td>
                       <td className="px-4 py-3.5">
                         <PayoutStatusBadge status={p.payout_status} />
@@ -445,7 +486,8 @@ function AllPayoutsTab({
                               <Unlock size={11} /> Unfreeze
                             </button>
                           )}
-                          {!['paid', 'cancelled'].includes(p.payout_status) && (
+                          {/* Freezing a 'paid' event is valid: it stops the NEXT delta on early-plan events */}
+                          {!['cancelled'].includes(p.payout_status) && (
                             <button
                               onClick={() => setFreezeTarget(p)}
                               disabled={
@@ -611,9 +653,11 @@ export default function AdminPayoutsPage() {
             <div className="flex items-start gap-3 p-4 bg-accent-text border border-accent-border rounded-card">
               <Info size={15} className="text-accent shrink-0 mt-0.5" />
               <p className="text-sm text-secondary">
-                These events have ended and the hold period has passed. Review
-                each one carefully before triggering a payout. If an attendee
-                reports a scam,{' '}
+                These payouts have passed their hold period. Standard-plan
+                events have ended; <strong className="text-primary">early-plan</strong>{' '}
+                events may still be selling tickets and can appear here
+                repeatedly as new bookings land. Review each one carefully
+                before triggering a payout. If an attendee reports a scam,{' '}
                 <strong className="text-primary">freeze first</strong>,
                 investigate, then trigger or refund.
               </p>
