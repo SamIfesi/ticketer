@@ -12,7 +12,7 @@
 //   disabled   — boolean
 
 import { Check, ShieldCheck, Zap, AlertTriangle } from 'lucide-react';
-import { PAYOUT_PLAN } from '../../../new/config/constants';
+import { PAYOUT_PLAN_MAP } from '../../config/constants';
 
 const PLANS = [
   {

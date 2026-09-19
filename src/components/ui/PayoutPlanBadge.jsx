@@ -1,6 +1,6 @@
 import { Zap } from 'lucide-react';
 import Badge from './Badge';
-import { PAYOUT_PLAN_MAP } from '../../../new/config/constants';
+import { PAYOUT_PLAN_MAP } from '../../config/constants';
 
 // Shows which payout plan an event is on. Renders nothing if unknown.
 export default function PayoutPlanBadge({ plan, size = 'sm' }) {
