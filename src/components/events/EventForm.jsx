@@ -13,6 +13,7 @@
 //   submitLabel   — button label e.g. "Create Event" | "Save Changes"
 
 import { useState, useEffect } from 'react';
+import PayoutPlanSelector from './PayoutPlanSelector';
 import {
   Plus,
   Trash2,
@@ -163,6 +164,8 @@ const DEFAULT_VALUES = {
   ticket_types: [{ ...EMPTY_TICKET }],
   checkin_mode: 'single',
   checkin_days: 1,
+  payout_plan: 'standard',
+  early_payout_ack: false,
 };
 
 // ── Main component ────────────────────────────────────────────
@@ -219,8 +222,12 @@ export default function EventForm({
       (acc, tt) => acc + parseInt(tt.quantity || 0, 10),
       0
     );
+    if (form.payout_plan === 'early' && !form.early_payout_ack) return;
+    // early_payout_ack is a UI-only consent flag — never sent to the API
+    // eslint-disable-next-line no-unused-vars
+    const { early_payout_ack, ...payload } = form;
     onSubmit({
-      ...form,
+      ...payload,
       total_tickets: form.total_tickets || totalFromTypes,
     });
   }
@@ -527,6 +534,14 @@ export default function EventForm({
             You can always publish later from your events list.
           </p>
         </div>
+
+        <PayoutPlanSelector
+          value={form.payout_plan}
+          ack={form.early_payout_ack}
+          onChange={(v) => set('payout_plan', v)}
+          onAckChange={(v) => set('early_payout_ack', v)}
+          disabled={loading}
+        />
       </section>
 
       {/* ── Submit ────────────────────────────────────────────── */}
@@ -536,6 +551,7 @@ export default function EventForm({
           variant="primary"
           size="lg"
           loading={loading}
+          disabled={form.payout_plan === 'early' && !form.early_payout_ack}
           className="flex-1 sm:flex-none sm:min-w-45"
         >
           {submitLabel}
