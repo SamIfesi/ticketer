@@ -21,8 +21,8 @@ import Navbar from '../../components/layout/Navbar';
 import Sidebar from '../../components/layout/Sidebar';
 import Footer from '../../components/layout/Footer';
 import Button from '../../components/ui/Button';
-import Input from '../../components/ui/Input';
 import Badge from '../../components/ui/Badge';
+import PayoutPlanBadge from '../../components/ui/PayoutPlanBadge';
 import Pagination from '../../components/ui/Pagination';
 
 // ── Payout status badge ───────────────────────────────────────
@@ -347,7 +347,15 @@ function PayoutHistory({
 
   return (
     <div>
-      <h2 className="text-base font-bold text-primary mb-4">Payout History</h2>
+      <h2 className="text-base font-bold text-primary mb-1">Payout History</h2>
+      <p className="text-xs text-muted mb-4">
+        “Your Amount” is the running total owed for each event. On the{' '}
+        <strong className="text-secondary">Early access</strong> plan, an event
+        can be paid out several times as new tickets sell — “Paid” means
+        everything owed so far has been sent, not that nothing more is coming.
+        Payouts are processed in batches (typically within 30 minutes of
+        becoming eligible), not instantly.
+      </p>
       <div className="bg-card border border-border rounded-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full min-w-max">
@@ -360,7 +368,7 @@ function PayoutHistory({
                   'Your Amount',
                   'Status',
                   'Hold Until',
-                  'Paid At',
+                  'Last Paid At',
                 ].map((h) => (
                   <th
                     key={h}
@@ -387,6 +395,9 @@ function PayoutHistory({
                       <p className="text-xs text-muted mt-0.5">
                         {formatShortDate(p.event_end_date)}
                       </p>
+                      <div className="mt-1">
+                        <PayoutPlanBadge plan={p.payout_plan} />
+                      </div>
                     </td>
                     <td className="px-4 py-3.5">
                       <span className="text-sm font-semibold text-primary">
@@ -433,7 +444,7 @@ function PayoutHistory({
                         No payouts yet
                       </p>
                       <p className="text-xs text-muted">
-                        Payouts appear here after your events conclude.
+                        Payouts appear here once your hold period passes — 48 hours after the event ends on Standard, or ~1 hours after each sale on Early access.
                       </p>
                     </div>
                   </td>

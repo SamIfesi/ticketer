@@ -62,6 +62,8 @@ export default function EditEventPage() {
       status: event.status ?? 'draft',
       checkin_mode: event.checkin_mode ?? 'single',
       checkin_days: event.checkin_days ?? 1,
+      payout_plan: event.payout_plan ?? 'standard',
+      early_payout_ack: event.payout_plan === 'early',
       ticket_types: (event.ticket_types ?? []).map((tt) => ({
         id: tt.id,
         name: tt.name ?? '',
