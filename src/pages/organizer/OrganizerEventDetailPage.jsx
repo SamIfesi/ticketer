@@ -8,6 +8,7 @@ import Navbar from '../../components/layout/Navbar';
 import Sidebar from '../../components/layout/Sidebar';
 import Footer from '../../components/layout/Footer';
 import Badge from '../../components/ui/Badge';
+import PayoutPlanBadge from '../../components/ui/PayoutPlanBadge';
 import StatCard from '../../components/dashboard/StatCard';
 
 function TicketTypeRow({ tt }) {
@@ -91,6 +92,7 @@ export default function OrganizerEventDetailPage() {
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <Badge status={event.status} size="sm" dot />
+                  <PayoutPlanBadge plan={event.payout_plan} />
                 </div>
                 <h1 className="text-2xl font-black text-primary tracking-tight">{event.title}</h1>
                 <div className="flex flex-wrap items-center gap-4 mt-2">

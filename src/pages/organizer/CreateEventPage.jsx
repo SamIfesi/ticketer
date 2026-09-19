@@ -97,8 +97,11 @@ export default function CreateEventPage() {
       (acc, tt) => acc + parseInt(tt.quantity || 0, 10),
       0
     );
+    // early_payout_ack is a UI-only consent flag — never sent to the API
+    // eslint-disable-next-line no-unused-vars
+    const { early_payout_ack, ...payload } = form;
     await createEvent(
-      { ...form, total_tickets: totalFromTypes },
+      { ...payload, total_tickets: totalFromTypes },
       {
         onSuccess: (event) => {
           navigate(`/organizer/events/${event.slug}`);
@@ -108,6 +111,7 @@ export default function CreateEventPage() {
   }
 
   const isLastStep = currentStep === STEPS.length;
+  const needsEarlyAck = form.payout_plan === 'early' && !form.early_payout_ack;
 
   return (
     <div className="flex flex-col min-h-screen bg-main-bg">
@@ -201,6 +205,7 @@ export default function CreateEventPage() {
               variant="primary"
               size="md"
               loading={loading}
+              disabled={needsEarlyAck}
               onClick={handleSubmit}
               className="min-w-40"
               icon={<Send size={15} strokeWidth={2} />}
