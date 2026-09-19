@@ -23,7 +23,7 @@ export default function CategoryEventCard({ event }) {
     >
       {/* Banner — fixed aspect box so every card is identical regardless
           of whether the source image is landscape or a tall portrait poster */}
-      <div className="relative w-full aspect-[4/3] bg-border overflow-hidden">
+      <div className="relative w-full aspect-4/3 bg-border overflow-hidden">
         {event.banner_image ? (
           <img
             src={event.banner_image}
