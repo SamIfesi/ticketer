@@ -503,11 +503,11 @@ export default function OrganizerPaymentPage() {
   useEffect(() => {
     fetchPaymentDetails();
     fetchBanks();
-  }, []);
+  }, [fetchPaymentDetails, fetchBanks]);
 
   useEffect(() => {
     fetchMyPayouts({ page: payoutPage });
-  }, [payoutPage]);
+  }, [payoutPage, fetchMyPayouts]);
 
   async function handleSave(formData) {
     const ok = await savePaymentDetails(formData, {
