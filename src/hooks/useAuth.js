@@ -7,7 +7,7 @@
 //   - the user object is stale, re-fetch /auth/me to get fresh data
 //   - NOTE: /auth/me does NOT return a new token - we keep the existing one
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AuthService from '../services/auth.service';
 import { useAuthStore } from '../store/authStore';
@@ -41,6 +41,31 @@ export function useAuth() {
   const [error, setError] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
 
+  // RATE LIMITING (429 responses from login/register/forgot-password/verify-otp)
+  // `rateLimit` is null when not rate-limited, otherwise { message, secondsLeft }.
+  // Countdown ticks down once a second and clears itself at 0.
+  const [rateLimit, setRateLimit] = useState(null);
+  const rateLimitIntervalRef = useRef(null);
+  const isRateLimited = Boolean(rateLimit && rateLimit.secondsLeft > 0);
+
+  const startRateLimitCountdown = useCallback((seconds, message) => {
+    clearInterval(rateLimitIntervalRef.current);
+    setRateLimit({ message, secondsLeft: seconds });
+    rateLimitIntervalRef.current = setInterval(() => {
+      setRateLimit((prev) => {
+        if (!prev || prev.secondsLeft <= 1) {
+          clearInterval(rateLimitIntervalRef.current);
+          return null;
+        }
+        return { ...prev, secondsLeft: prev.secondsLeft - 1 };
+      });
+    }, 1000);
+  }, []);
+
+  useEffect(() => {
+    return () => clearInterval(rateLimitIntervalRef.current);
+  }, []);
+
   function resetErrors() {
     setError(null);
     setFieldErrors({});
@@ -48,6 +73,25 @@ export function useAuth() {
 
   function extractError(err) {
     const data = err?.response?.data;
+
+    // 429 = rate limited (Redis-backed limiter on the four auth endpoints).
+    // This is an expected, working-backend response — never a network/auth
+    // failure — so it gets its own branch instead of falling into the
+    // generic message path below. The backend deliberately keeps the
+    // message generic (no attempt counts/thresholds); we just surface it
+    // and, if a Retry-After header is present, drive a countdown from it.
+    // No default duration is assumed when the header is missing.
+    if (err?.response?.status === 429) {
+      const msg = data?.message ?? 'Too many attempts. Please try again in a few minutes.';
+      setError(msg);
+
+      const retryAfterSeconds = Number(err.response.headers?.['retry-after']);
+      if (Number.isFinite(retryAfterSeconds) && retryAfterSeconds > 0) {
+        startRateLimitCountdown(retryAfterSeconds, msg);
+      }
+
+      return msg;
+    }
 
     if (data?.errors) {
       setFieldErrors(data.errors);
@@ -68,6 +112,7 @@ export function useAuth() {
 
   const register = useCallback(
     async ({ name, email, password }) => {
+      if (isRateLimited) return;
       setLoading(true);
       resetErrors();
       try {
@@ -88,7 +133,7 @@ export function useAuth() {
         setLoading(false);
       }
     },
-    [setAuth, toastError, toastSuccess, navigate]
+    [setAuth, toastError, toastSuccess, navigate, isRateLimited]
   );
 
   const verifyEmail = useCallback(
@@ -124,6 +169,7 @@ export function useAuth() {
 
   const login = useCallback(
     async ({ email, password }) => {
+      if (isRateLimited) return;
       setLoading(true);
       resetErrors();
       try {
@@ -147,7 +193,7 @@ export function useAuth() {
         setLoading(false);
       }
     },
-    [setAuth, toastError, toastSuccess, navigate]
+    [setAuth, toastError, toastSuccess, navigate, isRateLimited]
   );
 
   const logout = useCallback(async () => {
@@ -183,6 +229,7 @@ export function useAuth() {
   // FORGOTTON PASSWORD IMPLEMENTATION HOOKS
   const forgotPassword = useCallback(
     async (email) => {
+      if (isRateLimited) return;
       setLoading(true);
       resetErrors();
       try {
@@ -195,11 +242,12 @@ export function useAuth() {
         setLoading(false);
       }
     },
-    [navigate, toastError, toastSuccess]
+    [navigate, toastError, toastSuccess, isRateLimited]
   );
 
   const verifyForgotOtp = useCallback(
     async ({ email, otp }) => {
+      if (isRateLimited) return;
       setLoading(true);
       resetErrors();
 
@@ -226,7 +274,7 @@ export function useAuth() {
         setLoading(false);
       }
     },
-    [navigate, toastError, toastSuccess]
+    [navigate, toastError, toastSuccess, isRateLimited]
   );
 
   const resetPassword = useCallback(
@@ -285,6 +333,11 @@ export function useAuth() {
     loading,
     error,
     fieldErrors,
+
+    // Rate limiting (429s from login/register/forgot-password/verify-otp)
+    isRateLimited,
+    rateLimitSeconds: rateLimit?.secondsLeft ?? null,
+    rateLimitMessage: rateLimit?.message ?? null,
 
     // Actions
     register,
