@@ -4,6 +4,7 @@ import { ShieldCheck, ArrowLeft, X } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import OTPInput from '../../components/auth/OTPInput';
 import Button from '../../components/ui/Button';
+import { formatCountdown } from '../../utils/formatCountdown';
 
 function useResendTimer(initialSeconds = 60) {
   const [seconds, setSeconds] = useState(initialSeconds);
@@ -35,7 +36,13 @@ function useResendTimer(initialSeconds = 60) {
 }
 
 export default function VerifyOtpPage() {
-  const { loading, verifyForgotOtp, error } = useAuth();
+  const {
+    loading,
+    verifyForgotOtp,
+    error,
+    isRateLimited,
+    rateLimitSeconds,
+  } = useAuth();
   const [otp, setOtp] = useState('');
   const { seconds, canResend } = useResendTimer(60);
   const disabled = otp.length !== 6;
@@ -62,13 +69,13 @@ export default function VerifyOtpPage() {
   }
 
   async function handleComplete(value) {
-    if (loading) return;
+    if (loading || isRateLimited) return;
     await verifyForgotOtp({ email, otp: value });
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (otp.length < 6 || loading) return;
+    if (otp.length < 6 || loading || isRateLimited) return;
     await verifyForgotOtp({ email, otp });
   }
 
@@ -81,7 +88,7 @@ export default function VerifyOtpPage() {
 
   return (
     <div className="min-h-screen flex items-start justify-center bg-main-bg px-7 py-12">
-      <div className="w-full max-w-[420px]">
+      <div className="w-full max-w-105">
         <Link
           to="/forgot-password"
           className="inline-flex items-center gap-1.5 mb-8 text-sm font-medium text-secondary hover:text-primary transition-colors duration-150"
@@ -97,7 +104,7 @@ export default function VerifyOtpPage() {
           <h1 className="text-2xl font-bold text-primary tracking-tight">
             Enter verification code
           </h1>
-          <p className="text-sm text-secondary mt-2 text-center max-w-[22rem] leading-relaxed">
+          <p className="text-sm text-secondary mt-2 text-center max-w-88 leading-relaxed">
             We sent a 6-digit code to{' '}
             <span className="font-semibold text-primary">
               {maskEmail(email)}
@@ -121,10 +128,12 @@ export default function VerifyOtpPage() {
             variant="primary"
             size="md"
             loading={loading}
-            disabled={disabled || loading}
+            disabled={disabled || loading || isRateLimited}
             className="w-full"
           >
-            Verify code
+            {isRateLimited
+              ? `Try again in ${formatCountdown(rateLimitSeconds)}`
+              : 'Verify code'}
           </Button>
         </form>
 
