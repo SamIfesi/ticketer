@@ -13,9 +13,9 @@ import {
   Phone,
   Mail,
 } from 'lucide-react';
-import CategoryService from '../../services/category.service';
 import { formatCurrency } from '../../utils/formatCurrency';
 import Input from '../../components/ui/Input';
+import PayoutPlanSelector from './PayoutPlanSelector';
 import ImageUpload from '../../components/ui/ImageUpload';
 import {
   GRADIENTS,
@@ -632,6 +632,14 @@ export function StepPublish({ form, setForm, error }) {
           );
         })}
       </div>
+
+      {/* Payout plan */}
+      <PayoutPlanSelector
+        value={form.payout_plan}
+        ack={form.early_payout_ack}
+        onChange={(v) => set('payout_plan', v)}
+        onAckChange={(v) => set('early_payout_ack', v)}
+      />
     </div>
   );
 }
