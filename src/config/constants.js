@@ -422,7 +422,30 @@ export const DEFAULT_FORM = {
   status: 'draft',
   checkin_mode: 'single',
   checkin_days: 1,
+  payout_plan: 'standard',
+  early_payout_ack: false, // UI-only consent flag, stripped before submit
 };
+
+// === PAYOUT PLAN CONSTANTS ===
+export const PAYOUT_PLAN = {
+  STANDARD: 'standard',
+  EARLY: 'early',
+};
+
+export const PAYOUT_PLAN_MAP = {
+  standard: { variant: 'neutral', label: 'Standard' },
+  early: { variant: 'warning', label: 'Early access' },
+};
+
+export const PAYOUT_STATUS_VARIANT = {
+  pending: 'warning',
+  processing: 'info',
+  paid: 'success',
+  failed: 'error',
+  frozen: 'warning',
+  cancelled: 'neutral',
+};
+// === END PAYOUT PLAN CONSTANTS ===
 
 // === CHECK-IN MODE CONSTANTS ===
 export const CHECKIN_MODE = {
