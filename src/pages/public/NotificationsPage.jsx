@@ -17,9 +17,13 @@ import {
   CreditCard,
   Trash2,
   CheckCheck,
+  ShieldAlert,
+  ArrowRight,
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useNotifications } from '../../hooks/useNotification';
 import { formateRelativeTime } from '../../utils/formatDate';
+import { isActionRequired } from '../../utils/notificationMeta';
 import Navbar from '../../components/layout/Navbar';
 import Sidebar from '../../components/layout/Sidebar';
 import Button from '../../components/ui/Button';
@@ -46,6 +50,9 @@ const TYPE_ICONS = {
   bank_details_required: { icon: CreditCard, color: '#f59e0b' },
   admin_payout_failed: { icon: AlertCircle, color: '#ef4444' },
   admin_organizer_flagged: { icon: Flag, color: '#f59e0b' },
+  admin_payout_sent: { icon: Banknote, color: '#22c55e' },
+  dev_payout_sent: { icon: Banknote, color: '#22c55e' },
+  admin_payout_clawback_needed: { icon: ShieldAlert, color: '#ef4444' },
 };
 
 function NotificationSkeleton() {
@@ -71,6 +78,7 @@ function NotificationCard({ notification, onOpen, onDelete }) {
     color: '#2563eb',
   };
   const Icon = typeConfig.icon;
+  const actionRequired = isActionRequired(notification);
 
   function handleClick() {
     onOpen(notification);
@@ -79,7 +87,9 @@ function NotificationCard({ notification, onOpen, onDelete }) {
   return (
     <div
       className={`relative bg-card border rounded-card px-2 py-3 md:p-4 transition-all duration-150 cursor-pointer group overflow-hidden ${
-        notification.is_read
+        actionRequired
+        ? 'border-error/50 bg-error/5 hover:shadow-md'
+        : notification.is_read
           ? 'border-border hover:border-accent/30 hover:shadow-sm'
           : 'border-accent/30 bg-accent-text/30 hover:shadow-md'
       }`}
@@ -88,8 +98,12 @@ function NotificationCard({ notification, onOpen, onDelete }) {
       onMouseLeave={() => setHovered(false)}
     >
       {/* Unread dot */}
-      {!notification.is_read && (
-        <span className="absolute left-0 top-0 bottom-0 w-0.75 rounded-l-card bg-accent" />
+      {actionRequired ? (
+        <span className="absolute left-0 top-0 bottom-0 w-1 rounded-l-card bg-error" />
+      ) : (
+        !notification.is_read && (
+          <span className="absolute left-0 top-0 bottom-0 w-0.75 rounded-l-card bg-accent" />
+        )
       )}
 
       <div className="flex items-start gap-1 pl-1">
@@ -107,6 +121,11 @@ function NotificationCard({ notification, onOpen, onDelete }) {
 
         {/* Content */}
         <div className="flex-1 min-w-0">
+          {actionRequired && (
+            <span className="inline-flex items-center gap-1 mb-1 px-2 py-0.5 rounded-full bg-error text-white text-[10px] font-bold uppercase tracking-wide">
+              <ShieldAlert size={10} strokeWidth={2.5} /> Action required
+            </span>
+          )}
           <p
             className={`text-[11px] leading-snug ${notification.is_read ? 'text-primary font-medium' : 'text-primary font-bold'}`}
           >
@@ -216,6 +235,32 @@ export default function NotificationsPage() {
             </Button>
           )}
         </div>
+
+        {/* Action-required banner — clawback alerts must not blend into the feed */}
+        {notifications.some(isActionRequired) && (
+          <div className="flex items-start gap-3 p-4 mb-6 bg-error/10 border border-error/30 rounded-card">
+            <ShieldAlert size={18} className="text-error shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-error">
+                Payout clawback needed
+              </p>
+              <p className="text-xs text-secondary mt-0.5 leading-relaxed">
+                {notifications.filter(isActionRequired).length} cancelled{' '}
+                {notifications.filter(isActionRequired).length === 1
+                  ? 'event has'
+                  : 'events have'}{' '}
+                money that already left the platform. It is not recovered
+                automatically — follow up with the organizer directly.
+              </p>
+              <Link
+                to="/admin/payouts"
+                className="inline-flex items-center gap-1 mt-2 text-xs font-semibold text-error hover:underline"
+              >
+                Review payouts <ArrowRight size={12} strokeWidth={2.5} />
+              </Link>
+            </div>
+          </div>
+        )}
 
         {/* Filter pills */}
         <div className="flex items-center gap-2 mb-6">

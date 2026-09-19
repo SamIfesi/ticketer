@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
-import { X, ArrowRight, Trash2 } from 'lucide-react';
-import { getNotificationMeta, resolveNotificationLink } from '../../utils/notificationMeta';
+import { X, ArrowRight, Trash2, ShieldAlert } from 'lucide-react';
+import { getNotificationMeta, resolveNotificationLink, isActionRequired } from '../../utils/notificationMeta';
 import { formatShortDate, formatTime } from '../../utils/formatDate';
 import Button from '../ui/Button';
 
@@ -75,7 +75,16 @@ export default function NotificationDetailModal({
           </div>
 
           {/* Body */}
-          <div className="px-5 py-4">
+          <div className="px-5 py-4 flex flex-col gap-3">
+            {isActionRequired(notification) && (
+              <div className="flex items-start gap-2 p-3 bg-error/10 border border-error/30 rounded-btn">
+                <ShieldAlert size={14} className="text-error shrink-0 mt-0.5" />
+                <p className="text-xs font-semibold text-error leading-snug">
+                  Action required — funds were already paid out for this event
+                  and are not recovered automatically.
+                </p>
+              </div>
+            )}
             <p className="text-sm text-secondary leading-relaxed">
               {notification.body}
             </p>

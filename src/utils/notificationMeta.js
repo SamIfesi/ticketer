@@ -1,7 +1,7 @@
 import {
   CheckCircle2, XCircle, QrCode, CalendarX, CalendarClock,
   ShieldCheck, UserX, Megaphone, AlertTriangle, Banknote,
-  Flag, CreditCard, ThumbsUp, ThumbsDown, Bell, ClipboardList
+  Flag, CreditCard, ThumbsUp, ThumbsDown, Bell, ShieldAlert
 } from 'lucide-react';
 
 // Icon + accent color per notification type — same pattern as your TOAST_CONFIG
@@ -21,6 +21,9 @@ export const NOTIFICATION_META = {
   account_flagged:                 { icon: Flag,          color: 'var(--color-error)' },
   bank_details_required:           { icon: CreditCard,    color: 'var(--color-warning)' },
   admin_payout_failed:             { icon: XCircle,       color: 'var(--color-error)' },
+  admin_payout_sent:               { icon: Banknote,      color: 'var(--color-success)' },
+  dev_payout_sent:                 { icon: Banknote,      color: 'var(--color-success)' },
+  admin_payout_clawback_needed:    { icon: ShieldAlert,   color: 'var(--color-error)' },
   admin_organizer_flagged:         { icon: Flag,          color: 'var(--color-error)' },
   organizer_approved:              { icon: ThumbsUp,      color: 'var(--color-success)' },
   organizer_rejected:              { icon: ThumbsDown,    color: 'var(--color-error)' },
@@ -29,6 +32,11 @@ export const NOTIFICATION_META = {
   event_reminder:                  { icon: CalendarClock, color: 'var(--color-accent)' },
   admin_event_reminder:            { icon: CalendarClock, color: 'var(--color-info)' },
 };
+
+// Notification types that are ACTION ITEMS, not FYIs — rendered with distinct
+// treatment so an admin can't miss them in the regular feed.
+export const ACTION_REQUIRED_TYPES = ['admin_payout_clawback_needed'];
+export const isActionRequired = (n) => ACTION_REQUIRED_TYPES.includes(n?.type);
 
 export function getNotificationMeta(type) {
   return NOTIFICATION_META[type] ?? { icon: Bell, color: 'var(--color-muted)' };
@@ -44,6 +52,9 @@ const SAFE_OVERRIDES = {
   low_tickets:             (n) => (n.related_id ? `/organizer/events/${n.related_id}/edit` : '/organizer/events'),
   payout_sent:             () => '/organizer/payment-details',
   payout_frozen:           () => '/organizer/payment-details',
+  admin_payout_sent:       () => '/admin/payouts',
+  dev_payout_sent:         () => '/admin/payouts',
+  admin_payout_clawback_needed: () => '/admin/payouts',
   admin_organizer_flagged: () => '/admin/users',
   new_organizer_application: () => '/admin/organizer/applications',
   organizer_application_submitted: () => '/become-organizer',
