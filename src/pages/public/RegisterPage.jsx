@@ -6,10 +6,18 @@ import PasswordStrength from './PasswordStrength';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import GoogleSignInButton from '../../components/auth/GoogleSignInButton';
+import { formatCountdown } from '../../utils/formatCountdown';
 import logo from '/assets/icons/logo.svg';
 
 export default function RegisterPage() {
-  const { register, googleLogin, loading, fieldErrors } = useAuth();
+  const {
+    register,
+    googleLogin,
+    loading,
+    fieldErrors,
+    isRateLimited,
+    rateLimitSeconds,
+  } = useAuth();
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -188,10 +196,12 @@ export default function RegisterPage() {
               variant="primary"
               size="md"
               loading={loading}
-              disabled={!isValid}
+              disabled={!isValid || isRateLimited}
               className="w-full mt-1"
             >
-              Create Account
+              {isRateLimited
+                ? `Try again in ${formatCountdown(rateLimitSeconds)}`
+                : 'Create Account'}
             </Button>
           </form>
 

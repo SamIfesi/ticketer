@@ -5,10 +5,18 @@ import { useAuth } from '../../hooks/useAuth';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import GoogleSignInButton from '../../components/auth/GoogleSignInButton';
+import { formatCountdown } from '../../utils/formatCountdown';
 import logo from '/assets/icons/logo.svg';
 
 export default function LoginPage() {
-  const { login, googleLogin, loading, fieldErrors } = useAuth();
+  const {
+    login,
+    googleLogin,
+    loading,
+    fieldErrors,
+    isRateLimited,
+    rateLimitSeconds,
+  } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -101,10 +109,12 @@ export default function LoginPage() {
               variant="primary"
               size="md"
               loading={loading}
-              disabled={!email || !password}
+              disabled={!email || !password || isRateLimited}
               className="w-full mt-1"
             >
-              Sign in
+              {isRateLimited
+                ? `Try again in ${formatCountdown(rateLimitSeconds)}`
+                : 'Sign in'}
             </Button>
           </form>
 
