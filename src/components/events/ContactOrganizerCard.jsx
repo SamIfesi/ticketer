@@ -39,7 +39,7 @@ export default function ContactOrganizerCard({ phone, email, organizerName }) {
         {phone && (
           <a
             href={`tel:${phone.replace(/\s+/g, '')}`}
-            className="flex flex-1 items-center gap-2.5 h-10 px-3 border border-border rounded-btn text-sm font-medium text-primary hover:border-accent/40 hover:text-accent transition-colors duration-150"
+            className="flex items-center gap-2.5 h-12 px-5 border border-border rounded-btn text-sm font-medium text-primary hover:border-accent/40 hover:text-accent transition-colors duration-150"
           >
             <Phone
               size={14}
@@ -52,7 +52,7 @@ export default function ContactOrganizerCard({ phone, email, organizerName }) {
         {email && (
           <a
             href={`mailto:${email}`}
-            className="flex flex-1 items-center gap-2.5 h-10 px-3 border border-border rounded-btn text-sm font-medium text-primary hover:border-accent/40 hover:text-accent transition-colors duration-150"
+            className="flex items-center gap-2.5 h-12 px-5 border border-border rounded-btn text-sm font-medium text-primary hover:border-accent/40 hover:text-accent transition-colors duration-150"
           >
             <Mail
               size={14}
