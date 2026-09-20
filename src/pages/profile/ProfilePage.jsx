@@ -9,7 +9,9 @@ import {
   Monitor,
   LogOut,
   Ticket,
-  BookOpen,Bell, ScrollText
+  BookOpen,
+  Bell,
+  Gavel,
 } from 'lucide-react';
 import { useProfile } from '../../hooks/useProfile';
 import { useAuth } from '../../hooks/useAuth';
@@ -114,6 +116,16 @@ export default function ProfilePage() {
               label="Change Email"
               subtitle={profile?.email ?? user?.email ?? '—'}
               to="/profile/change-email"
+            />
+          </SettingsGroup>
+
+          <SettingsGroup title="Legal">
+            <SettingsItem
+              icon={Gavel}
+              iconColor="#10b981"
+              label="Legal & Privacy"
+              subtitle="View our terms of service and privacy policy"
+              to="/legal"
             />
           </SettingsGroup>
 
