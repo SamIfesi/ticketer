@@ -1,6 +1,6 @@
 export const BASE_URL = import.meta.env.VITE_API_URL;
 export const PAYSTACK_PUBLIC_KEY =
-  import.meta.env.VITE_PAYSTACK_PUBLIC_KEY ?? '';
+  import.meta.env.VITE_LIVE_PAYSTACK_PUBLIC_KEY ?? '';
 
 // ==== FOR USERTABLE AND EVENT-TABLE COMPONENT
 export const ROLES = {
