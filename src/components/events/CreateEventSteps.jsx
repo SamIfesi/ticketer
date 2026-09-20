@@ -599,7 +599,7 @@ export function StepPublish({ form, setForm, error }) {
               type="button"
               onClick={() => set('status', option.value)}
               className={`w-full text-left flex items-start gap-2 p-4 rounded-card border-2 transition-all duration-150 ${
-                form.status === option.value
+                isActive
                   ? 'border-accent bg-accent-text'
                   : 'border-border bg-card hover:border-accent/40'
               }`}
@@ -608,23 +608,25 @@ export function StepPublish({ form, setForm, error }) {
                 <Icon
                   size={14}
                   strokeWidth={2.5}
-                  className={isActive ? 'text-accent' : 'text-primary'}
+                  className={isActive ? 'text-primary' : 'text-secondary'}
                 />
               </span>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <p
-                    className={`text-sm font-bold ${form.status === option.value ? 'text-accent' : 'text-primary'}`}
+                    className={`text-sm font-bold ${isActive ? 'text-primary' : 'text-secondary'}`}
                   >
                     {option.label}
                   </p>
-                  {form.status === option.value && (
+                  {isActive && (
                     <div className="w-4 h-4 rounded-full bg-accent flex items-center justify-center shrink-0">
                       <Check size={10} className="text-white" strokeWidth={3} />
                     </div>
                   )}
                 </div>
-                <p className="text-xs text-muted mt-0.5 leading-snug">
+                <p
+                  className={`text-xs mt-0.5 leading-snug ${isActive ? 'text-secondary' : 'text-muted'}`}
+                >
                   {option.description}
                 </p>
               </div>

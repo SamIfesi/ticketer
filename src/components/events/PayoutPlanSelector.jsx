@@ -12,7 +12,7 @@
 //   disabled   — boolean
 
 import { Check, ShieldCheck, Zap, AlertTriangle } from 'lucide-react';
-import { PAYOUT_PLAN_MAP } from '../../config/constants';
+import { PAYOUT_PLAN_MAP, PAYOUT_PLAN } from '../../config/constants';
 
 const PLANS = [
   {
@@ -67,12 +67,12 @@ export default function PayoutPlanSelector({
             <Icon
               size={14}
               strokeWidth={2.5}
-              className={`mt-1 shrink-0 ${active ? 'text-accent' : 'text-primary'}`}
+              className={`mt-1 shrink-0 ${active ? 'text-primary' : 'text-secondary'}`}
             />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <p
-                  className={`text-sm font-bold ${active ? 'text-accent' : 'text-primary'}`}
+                  className={`text-sm font-bold ${active ? 'text-primary' : 'text-secondary'}`}
                 >
                   {plan.label}
                 </p>
@@ -82,7 +82,7 @@ export default function PayoutPlanSelector({
                   </div>
                 )}
               </div>
-              <p className="text-xs text-muted mt-0.5 leading-snug">
+              <p className={`text-xs  mt-0.5 leading-snug ${active ? 'text-secondary' : 'text-muted'}`}>
                 {plan.description}
               </p>
             </div>
@@ -95,7 +95,7 @@ export default function PayoutPlanSelector({
           <div className="flex items-start gap-2">
             <AlertTriangle size={15} className="text-warning shrink-0 mt-0.5" />
             <p className="text-xs text-secondary leading-relaxed">
-              <strong className="text-primary">Read before choosing.</strong>{' '}
+              <strong className="text-primary">Read before choosing.</strong>{' '} <br />
               If your event is cancelled or found fraudulent after payouts have
               gone out, that money is{' '}
               <strong className="text-primary">
@@ -111,7 +111,7 @@ export default function PayoutPlanSelector({
               checked={ack}
               disabled={disabled}
               onChange={(e) => onAckChange?.(e.target.checked)}
-              className="mt-0.5 w-4 h-4 accent-[var(--color-accent)] shrink-0"
+              className="mt-0.5 w-4 h-4 accent-accent shrink-0"
             />
             <span className="text-xs font-semibold text-primary leading-snug">
               I understand the risk and want early access to my ticket revenue.
