@@ -22,6 +22,7 @@ import Badge from '../../components/ui/Badge';
 import PayoutPlanBadge from '../../components/ui/PayoutPlanBadge';
 import Pagination from '../../components/ui/Pagination';
 import { ConfirmModal } from '../../components/ui/Modal';
+import { SPLIT_MODE, PAYOUT_STATUS_LABEL } from '../../config/constants';
 
 const PAYOUT_STATUS_VARIANT = {
   pending: 'warning',
@@ -30,12 +31,14 @@ const PAYOUT_STATUS_VARIANT = {
   failed: 'error',
   frozen: 'warning',
   cancelled: 'neutral',
+  split_settled: 'success',
 };
 
 function PayoutStatusBadge({ status }) {
   return (
     <Badge variant={PAYOUT_STATUS_VARIANT[status] ?? 'neutral'} size="sm" dot>
-      {status.charAt(0).toUpperCase() + status.slice(1)}
+      {PAYOUT_STATUS_LABEL[status] ??
+        status.charAt(0).toUpperCase() + status.slice(1)}
     </Badge>
   );
 }
@@ -260,17 +263,19 @@ function PendingPayoutCard({
 
         {/* Actions */}
         <div className="flex items-center gap-2 flex-wrap">
-          <Button
-            variant="primary"
-            size="sm"
-            icon={<CheckCircle2 size={14} />}
-            loading={isThisMutating}
-            disabled={cannotTrigger || (mutating && !isThisMutating)}
-            onClick={() => onTrigger(payout.event_id)}
-            className="flex-1"
-          >
-            Trigger Payout
-          </Button>
+          {!SPLIT_MODE && (
+            <Button
+              variant="primary"
+              size="sm"
+              icon={<CheckCircle2 size={14} />}
+              loading={isThisMutating}
+              disabled={cannotTrigger || (mutating && !isThisMutating)}
+              onClick={() => onTrigger(payout.event_id)}
+              className="flex-1"
+            >
+              Trigger Payout
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="sm"
@@ -348,6 +353,9 @@ function AllPayoutsTab({
     { value: 'failed', label: 'Failed' },
     { value: 'frozen', label: 'Frozen' },
     { value: 'cancelled', label: 'Cancelled' },
+    ...(SPLIT_MODE
+      ? [{ value: 'split_settled', label: 'Settled by Paystack' }]
+      : []),
   ];
 
   function SkeletonRow() {
@@ -411,7 +419,7 @@ function AllPayoutsTab({
                 Array.from({ length: 8 }).map((_, i) => <SkeletonRow key={i} />)
               ) : payouts.length > 0 ? (
                 payouts.map((p) => {
-                  const isThisMutating = mutating && mutatingId === p.event_id;
+                  // const isThisMutating = mutating && mutatingId === p.event_id;
                   return (
                     <tr
                       key={p.id}
@@ -468,7 +476,8 @@ function AllPayoutsTab({
                       </td>
                       <td className="px-4 py-3.5">
                         <div className="flex items-center gap-1.5">
-                          {['pending', 'failed'].includes(p.payout_status) && (
+                          {!SPLIT_MODE &&
+                            ['pending', 'failed'].includes(p.payout_status) && (
                             <button
                               onClick={() => onTrigger(p.event_id)}
                               disabled={mutating}
@@ -487,7 +496,7 @@ function AllPayoutsTab({
                             </button>
                           )}
                           {/* Freezing a 'paid' event is valid: it stops the NEXT delta on early-plan events */}
-                          {!['cancelled'].includes(p.payout_status) && (
+                          {!['cancelled', 'split_settled'].includes(p.payout_status) && (
                             <button
                               onClick={() => setFreezeTarget(p)}
                               disabled={
@@ -622,6 +631,20 @@ export default function AdminPayoutsPage() {
             refunds.
           </p>
         </div>
+
+        {SPLIT_MODE && (
+          <div className="flex items-start gap-3 p-4 mb-6 bg-warning/10 border border-warning/20 rounded-card">
+            <Info size={15} className="text-warning shrink-0 mt-0.5" />
+            <p className="text-sm text-secondary">
+              <strong className="text-primary">Split mode is active.</strong>{' '}
+              Paystack pays organizers directly (T+1) at payment time, so there
+              is nothing to trigger and payouts cannot be held or frozen. Use{' '}
+              <strong className="text-primary">Refund All</strong> only after
+              confirming with Paystack how refunds are funded on split
+              transactions.
+            </p>
+          </div>
+        )}
 
         {/* Tabs */}
         <div className="flex items-center gap-1 p-1 bg-main-bg border border-border rounded-card mb-8 w-fit">
