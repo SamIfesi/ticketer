@@ -16,6 +16,7 @@ import {
   EMPTY_TICKET,
   DEFAULT_FORM,
 } from '../../config/constants';
+import { SPLIT_MODE } from '../../config/constants';
 import {
   StepIndicator,
   StepBasicInfo,
@@ -111,7 +112,8 @@ export default function CreateEventPage() {
   }
 
   const isLastStep = currentStep === STEPS.length;
-  const needsEarlyAck = form.payout_plan === 'early' && !form.early_payout_ack;
+  const needsEarlyAck =
+    !SPLIT_MODE && form.payout_plan === 'early' && !form.early_payout_ack;
 
   return (
     <div className="flex flex-col min-h-screen bg-main-bg">
