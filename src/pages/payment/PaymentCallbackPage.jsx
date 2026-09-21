@@ -152,7 +152,7 @@ function SuccessState({ data, reference, countdown, onViewTickets }) {
       </p>
 
       {/* Ticket card */}
-      <div className="w-full max-w-sm bg-card border border- rounded-card overflow-hidden mb-8">
+      <div className="w-full max-w-sm bg-card border border-card rounded-card overflow-hidden mb-8">
         {/* Green top strip */}
         <div className="h-1.5 w-full bg-success" />
 
