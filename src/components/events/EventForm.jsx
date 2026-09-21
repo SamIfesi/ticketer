@@ -14,6 +14,7 @@
 
 import { useState, useEffect } from 'react';
 import PayoutPlanSelector from './PayoutPlanSelector';
+import { SPLIT_MODE } from '../../config/constants';
 import {
   Plus,
   Trash2,
@@ -222,7 +223,7 @@ export default function EventForm({
       (acc, tt) => acc + parseInt(tt.quantity || 0, 10),
       0
     );
-    if (form.payout_plan === 'early' && !form.early_payout_ack) return;
+    if (!SPLIT_MODE && form.payout_plan === 'early' && !form.early_payout_ack) return;
     // early_payout_ack is a UI-only consent flag — never sent to the API
     // eslint-disable-next-line no-unused-vars
     const { early_payout_ack, ...payload } = form;
@@ -551,7 +552,7 @@ export default function EventForm({
           variant="primary"
           size="lg"
           loading={loading}
-          disabled={form.payout_plan === 'early' && !form.early_payout_ack}
+          disabled={!SPLIT_MODE && form.payout_plan === 'early' && !form.early_payout_ack}
           className="flex-1 sm:flex-none sm:min-w-45"
         >
           {submitLabel}
