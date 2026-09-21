@@ -24,6 +24,7 @@ import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
 import PayoutPlanBadge from '../../components/ui/PayoutPlanBadge';
 import Pagination from '../../components/ui/Pagination';
+import { SPLIT_MODE, PAYOUT_STATUS_LABEL } from '../../config/constants';
 
 // ── Payout status badge ───────────────────────────────────────
 const PAYOUT_STATUS_VARIANT = {
@@ -33,12 +34,14 @@ const PAYOUT_STATUS_VARIANT = {
   failed: 'error',
   frozen: 'warning',
   cancelled: 'neutral',
+  split_settled: 'success',
 };
 
 function PayoutStatusBadge({ status }) {
   return (
     <Badge variant={PAYOUT_STATUS_VARIANT[status] ?? 'neutral'} size="sm" dot>
-      {status.charAt(0).toUpperCase() + status.slice(1)}
+      {PAYOUT_STATUS_LABEL[status] ??
+        status.charAt(0).toUpperCase() + status.slice(1)}
     </Badge>
   );
 }
@@ -222,8 +225,9 @@ function BankDetailsForm({
 
       {!isEdit && (
         <p className="text-xs text-muted">
-          Your account will be verified instantly via Paystack. These details
-          are used to send your event revenue after payouts.
+          {SPLIT_MODE
+            ? 'Your account will be checked via Paystack. Ticket revenue is paid directly into this account, so double-check the details: Paystack is not liable for funds sent to a wrong account.'
+            : 'Your account will be verified instantly via Paystack. These details are used to send your event revenue after payouts.'}
         </p>
       )}
     </form>
@@ -251,7 +255,7 @@ function SavedDetailsCard({
     },
     {
       label: 'Platform Fee',
-      value: `${paymentDetails.platform_fee_percentage}%`,
+      value: SPLIT_MODE ? '0%' : `${paymentDetails.platform_fee_percentage}%`,
       icon: Percent,
     },
   ];
@@ -349,12 +353,23 @@ function PayoutHistory({
     <div>
       <h2 className="text-base font-bold text-primary mb-1">Payout History</h2>
       <p className="text-xs text-muted mb-4">
+        {SPLIT_MODE ? (
+          <>
+            Revenue is paid by Paystack directly to your bank account, usually
+            the next business day after each sale (excluding weekends and
+            public holidays). Rows marked “Settled by Paystack” need no action
+            from you.
+          </>
+        ) : (
+          <>
         “Your Amount” is the running total owed for each event. On the{' '}
         <strong className="text-secondary">Early access</strong> plan, an event
         can be paid out several times as new tickets sell — “Paid” means
         everything owed so far has been sent, not that nothing more is coming.
         Payouts are processed in batches (typically within 30 minutes of
         becoming eligible), not instantly.
+          </>
+        )}
       </p>
       <div className="bg-card border border-border rounded-card overflow-hidden">
         <div className="overflow-x-auto">
@@ -444,7 +459,9 @@ function PayoutHistory({
                         No payouts yet
                       </p>
                       <p className="text-xs text-muted">
-                        Payouts appear here once your hold period passes — 48 hours after the event ends on Standard, or ~1 hours after each sale on Early access.
+                        {SPLIT_MODE
+                          ? 'Sales appear here as they are paid. Paystack settles them to your bank account directly.'
+                          : 'Payouts appear here once your hold period passes — 48 hours after the event ends on Standard, or ~1 hours after each sale on Early access.'}
                       </p>
                     </div>
                   </td>
@@ -537,9 +554,22 @@ export default function OrganizerPaymentPage() {
             Payment Settings
           </h1>
           <p className="text-sm text-secondary mt-1">
-            Add your bank details to receive payouts after your events.
+            {SPLIT_MODE
+              ? 'Add your bank details to receive ticket revenue directly from Paystack.'
+              : 'Add your bank details to receive payouts after your events.'}
           </p>
         </div>
+
+        {SPLIT_MODE && (
+          <div className="flex items-start gap-3 p-4 mb-6 bg-accent-text border border-accent-border rounded-card">
+            <Banknote size={16} className="text-accent shrink-0 mt-0.5" />
+            <p className="text-xs text-secondary leading-relaxed">
+              Your first payout can take longer while Paystack verifies your
+              account. After that, sales settle on the next business day. Ticketer
+              takes no commission on this event.
+            </p>
+          </div>
+        )}
 
         {paymentDetailsLoading ? (
           <div className="flex flex-col gap-5 animate-pulse">
