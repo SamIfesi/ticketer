@@ -62,7 +62,7 @@ function DayTabs({ totalDays, day, onSelect }) {
 
 function AttendeeRow({ ticket, isMultiDay }) {
   const isCheckedIn = ticket.is_used === 1 || ticket.is_used === true;
-  const ticketId = ticket?.ticket_number ? ticket.ticket_number : `#${String(ticket.id).padStart(6, '0')}`;
+  const ticketId = ticket?.ticket_number;
 
   return (
     <tr className="border-t border-border hover:bg-main-bg transition-colors duration-150">

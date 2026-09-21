@@ -273,8 +273,8 @@ function FullTicketCard({ ticket, showQr }) {
             <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1">
               Ticket ID
             </p>
-            <p className="font-mono text-base font-semibold text-primary tracking-wide">
-              {ticket?.ticket_number ? ticket.ticket_number : `#${String(ticket.id).padStart(6, '0')}`}
+            <p className="text-base font-semibold text-primary tracking-wide">
+              {ticket?.ticket_number}
             </p>
             <div className="mt-2">
               <StatusPill status={ticket?.status} />
