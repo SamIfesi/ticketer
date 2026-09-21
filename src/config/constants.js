@@ -1,4 +1,7 @@
 export const BASE_URL = import.meta.env.VITE_API_URL;
+// Temporary payout mode. 'split' = Paystack pays organizers directly
+// (Starter Business). Must match PAYOUT_MODE on the backend .env.
+export const SPLIT_MODE = import.meta.env.VITE_PAYOUT_MODE === 'split';
 export const PAYSTACK_PUBLIC_KEY =
   import.meta.env.VITE_LIVE_PAYSTACK_PUBLIC_KEY ?? '';
 
@@ -444,6 +447,11 @@ export const PAYOUT_STATUS_VARIANT = {
   failed: 'error',
   frozen: 'warning',
   cancelled: 'neutral',
+  split_settled: 'success',
+};
+
+export const PAYOUT_STATUS_LABEL = {
+  split_settled: 'Settled by Paystack',
 };
 // === END PAYOUT PLAN CONSTANTS ===
 
