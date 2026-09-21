@@ -11,8 +11,8 @@
 //   onAckChange— (bool) => void
 //   disabled   — boolean
 
-import { Check, ShieldCheck, Zap, AlertTriangle } from 'lucide-react';
-import { PAYOUT_PLAN_MAP, PAYOUT_PLAN } from '../../config/constants';
+import { Check, ShieldCheck, Zap, AlertTriangle, Banknote } from 'lucide-react';
+import { PAYOUT_PLAN, SPLIT_MODE } from '../../config/constants';
 
 const PLANS = [
   {
@@ -38,6 +38,26 @@ export default function PayoutPlanSelector({
   onAckChange,
   disabled = false,
 }) {
+  // Split mode: no plan to choose — Paystack pays the organizer directly.
+  if (SPLIT_MODE) {
+    return (
+      <div className="flex items-start gap-2.5 p-4 bg-accent-text border border-accent-border rounded-card">
+        <Banknote size={15} className="text-accent shrink-0 mt-0.5" />
+        <div>
+          <p className="text-sm font-semibold text-primary">
+            Direct payouts to your bank account
+          </p>
+          <p className="text-xs text-secondary mt-0.5 leading-relaxed">
+            Ticket revenue is paid by Paystack straight to your verified bank
+            account, usually the next business day after each sale (excluding
+            weekends and public holidays). Your first payout may be delayed
+            while Paystack verifies your account.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   const isEarly = value === PAYOUT_PLAN.EARLY;
 
   return (
