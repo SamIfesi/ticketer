@@ -55,16 +55,16 @@ function EventCard({ event, index, onDelete, mutating }) {
 
   return (
     <>
-      <div className="bg-card border border-border rounded-card overflow-hidden hover:shadow-md hover:border-accent/20 transition-all duration-200 flex flex-col">
+      <div className="bg-card border border-border rounded-card overflow- hover:shadow-md hover:border-accent/20 transition-all duration-200 flex flex-col">
         {/* Banner */}
         <div
-          className={`relative h-36 bg-linear-to-br ${gradient} overflow-hidden`}
+          className={`relative h-42 bg-linear-to-br ${gradient} rounded-t-card overflow-`}
         >
           {event.banner_image && (
             <img
               src={event.banner_image}
               alt={event.title}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover rounded-t-card"
             />
           )}
           <div className="absolute inset-0 bg-linear-to-t from-black/50 to-transparent" />
@@ -103,7 +103,7 @@ function EventCard({ event, index, onDelete, mutating }) {
                   className="fixed inset-0 z-10"
                   onClick={() => setMenuOpen(false)}
                 />
-                <div className="absolute bottom-9 right-0 z-20 w-44 bg-card border border-border rounded-card shadow-lg py-1 overflow-hidden">
+                <div className="absolute bottom-9 right-0 z-20 w-44 bg-card border border-border rounded-card shadow-lg py-1 overflow-">
                   <Link
                     to={`/events/${event.slug}`}
                     onClick={() => setMenuOpen(false)}
