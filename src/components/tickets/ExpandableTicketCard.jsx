@@ -232,6 +232,7 @@ function ExpandedCard({ ticket, gradientIndex, onCollapse }) {
   const startDate = ticket?.event_start_date ?? event?.start_date;
   const location = ticket?.event_location ?? event?.location;
   const ticketAmount = ticket?.unit_price;
+  const banner = ticket?.banner_image;
 
   return (
     <div className="bg-card rounded-card overflow-hidden shadow-lg transition-all duration-300">
@@ -240,9 +241,9 @@ function ExpandedCard({ ticket, gradientIndex, onCollapse }) {
         className="relative h-44 overflow-hidden"
         style={{ background: BANNER_GRADIENTS[gradientIndex] }}
       >
-        {event.banner_image && (
+        {ticket?.banner_image && (
           <img
-            src={event.banner_image}
+            src={banner}
             alt={title}
             className="absolute inset-0 w-full h-full object-cover opacity-50"
           />

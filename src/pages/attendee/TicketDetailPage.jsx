@@ -227,6 +227,7 @@ export default function TicketDetailPage() {
   const startDate = ticket?.event_start_date ?? event?.start_date;
   const location = ticket?.event_location ?? event?.location;
   const ticketAmount = ticket?.unit_price;
+  const banner = ticket?.banner_image
 
   return (
     <div className="flex flex-col min-h-screen bg-main-bg">
@@ -265,9 +266,9 @@ export default function TicketDetailPage() {
                 className="relative h-44 overflow-hidden"
                 style={{ background: BANNER_GRADIENTS[gradientIndex] }}
               >
-                {event.banner_image && (
+                {ticket?.banner_image && (
                   <img
-                    src={event.banner_image}
+                    src={banner}
                     alt={ticket.event_title}
                     className="absolute inset-0 w-full h-full object-cover opacity-50"
                   />
@@ -389,7 +390,7 @@ export default function TicketDetailPage() {
               {(isValid || isUsed) && ticket?.booking_id && (
                 <DownloadTicketButton
                   ticketId={ticket.id}
-                  // bookingId={ticket.booking_id}
+                  bookingId={ticket.booking_id}
                   size="md"
                   checkOnMount
                 />
@@ -414,9 +415,7 @@ export default function TicketDetailPage() {
 
             {/* Fine print */}
             <p className="text-center text-xs text-muted pb-2">
-              Ticket ID: {' '}
-              {ticket?.ticket_number}{' '}
-              · Issued via Ticketer
+              Ticket ID: {ticket?.ticket_number} · Issued via Ticketer
             </p>
           </div>
         ) : null}
