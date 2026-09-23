@@ -48,7 +48,7 @@ const TicketsService = {
     const response = await api.get(`/tickets/${ticketId}/download`, {
       responseType: 'blob',
       skipLoader: true,
-      timeout: 100000,
+      timeout: 130000,
     });
 
     const blob = new Blob([response.data], { type: 'application/pdf' });
@@ -81,7 +81,7 @@ const TicketsService = {
     const response = await api.get(`/tickets/${ticketId}/download/png`, {
       responseType: 'blob',
       skipLoader: true,
-      timeout: 100000,
+      timeout: 130000,
     });
 
     const blob = new Blob([response.data], { type: 'image/png' });
