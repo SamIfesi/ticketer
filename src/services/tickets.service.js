@@ -37,10 +37,18 @@ const TicketsService = {
   // Both PDF and PNG are generated together on the first request
   // for a booking, so downloading either format warms the cache
   // for every ticket under that booking.
+  //
+  // timeout is overridden to 100s here (the app-wide default is
+  // 15s) because this specific request can trigger on-demand
+  // generation server-side — the backend's PHP max_execution_time
+  // is 120s for exactly that reason, so the old 15s axios timeout
+  // was cutting the request off long before the server was actually
+  // done, which is what made a fresh-payment download look broken.
   async downloadTicket(ticketId) {
     const response = await api.get(`/tickets/${ticketId}/download`, {
       responseType: 'blob',
       skipLoader: true,
+      timeout: 100000,
     });
 
     const blob = new Blob([response.data], { type: 'application/pdf' });
@@ -68,10 +76,12 @@ const TicketsService = {
 
   // GET /api/tickets/:id/download/png
   // Streams the server-generated PNG binary for a single ticket.
+  // timeout overridden for the same reason as downloadTicket above.
   async downloadTicketPng(ticketId) {
     const response = await api.get(`/tickets/${ticketId}/download/png`, {
       responseType: 'blob',
       skipLoader: true,
+      timeout: 100000,
     });
 
     const blob = new Blob([response.data], { type: 'image/png' });
