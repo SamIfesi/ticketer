@@ -76,30 +76,45 @@ export function useTicketDownload() {
     }
   }, []);
 
+  // Small sleep helper so the poll loop below is a real awaited
+  // chain instead of a fire-and-forget setTimeout recursion (the old
+  // version returned to its caller after the FIRST attempt, letting
+  // callers flip `downloading` back to false while it kept silently
+  // polling in the background — button looked idle mid-poll).
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
   // Poll until a single ticket is ready then trigger its download.
   // Used right after payment when the worker may not have finished yet.
   // format: 'pdf' | 'png'
+  //
+  // maxWaitSeconds defaults to 110s — just over the PDF cron worker's
+  // 2-minute cycle (job is queued with a 10s delay right at payment),
+  // so a normal fresh-payment download almost always resolves inside
+  // one poll window instead of needing a manual retry.
   const waitAndDownload = useCallback(
-    async (ticketId, bookingId, format = 'pdf', maxWaitSeconds = 60) => {
+    async (ticketId, bookingId, format = 'pdf', maxWaitSeconds = 110) => {
       if (!ticketId || !bookingId) return toastError('Invalid ticket.');
 
       const isPng = format === 'png';
       isPng ? setDownloadingPng(true) : setDownloading(true);
-      toastInfo(`Preparing your ticket ${isPng ? 'image' : 'PDF'}…`);
+      toastInfo(
+        `Preparing your ticket ${isPng ? 'image' : 'PDF'}… this can take a little longer right after payment.`
+      );
 
       const interval = 3000;
-      const maxTries = (maxWaitSeconds * 1000) / interval;
-      let tries = 0;
+      const maxTries = Math.ceil((maxWaitSeconds * 1000) / interval);
 
-      const poll = async () => {
-        const status = await checkStatus(bookingId);
-        const ticketStatus = status.tickets?.find(
-          (t) => t.ticket_id === ticketId
-        );
-        const ready = isPng ? ticketStatus?.png_ready : ticketStatus?.pdf_ready;
+      try {
+        for (let tries = 0; tries < maxTries; tries++) {
+          const status = await checkStatus(bookingId);
+          const ticketStatus = status.tickets?.find(
+            (t) => t.ticket_id === ticketId
+          );
+          const ready = isPng
+            ? ticketStatus?.png_ready
+            : ticketStatus?.pdf_ready;
 
-        if (ready) {
-          try {
+          if (ready) {
             if (isPng) {
               await TicketsService.downloadTicketPng(ticketId);
             } else {
@@ -107,28 +122,39 @@ export function useTicketDownload() {
             }
             toastSuccess('Ticket downloaded!');
             isPng ? setIsPngReady(true) : setIsReady(true);
-          } catch {
-            toastError('Download failed. Please try again.');
-          } finally {
-            isPng ? setDownloadingPng(false) : setDownloading(false);
+            return;
           }
-          return;
+
+          if (tries < maxTries - 1) await sleep(interval);
         }
 
-        tries++;
-        if (tries >= maxTries) {
-          toastError('Ticket is still being generated. Try again in a moment.');
-          isPng ? setDownloadingPng(false) : setDownloading(false);
-          return;
-        }
-
-        setTimeout(poll, interval);
-      };
-
-      await poll();
+        // Timed out — this is a "not yet", not a hard failure, so
+        // keep it informational rather than alarming.
+        toastInfo('Ticket is still being generated. Try again in a moment.');
+      } catch {
+        toastError('Download failed. Please try again.');
+      } finally {
+        isPng ? setDownloadingPng(false) : setDownloading(false);
+      }
     },
     [checkStatus, toastInfo, toastError, toastSuccess]
   );
+
+  // A download error counts as "ticket isn't ready yet" (worth polling
+  // for) rather than a hard failure whenever there's no clean 4xx from
+  // the server telling us otherwise. In practice this is what actually
+  // happens right after payment: the on-demand generation on the server
+  // is slow enough to blow past the request timeout, so the browser
+  // reports a timeout/network error with no `response` at all — not a
+  // 404/400 — and that case was falling straight through to a scary
+  // red "Download failed" instead of triggering the existing poll.
+  function isRetryableDownloadError(err) {
+    const status = err?.response?.status;
+    if (!err?.response) return true; // timeout / network error / CORS abort
+    if (status === 404 || status === 400 || status === 425) return true;
+    if (status >= 500) return true; // generation blew up server-side mid-request
+    return false; // e.g. 401/403 — a real permission problem, don't retry
+  }
 
   // Direct single-ticket PDF download. Falls back to polling if not ready yet.
   const downloadTicket = useCallback(
@@ -138,10 +164,7 @@ export function useTicketDownload() {
         await TicketsService.downloadTicket(ticketId);
         toastSuccess('Ticket downloaded!');
       } catch (err) {
-        if (
-          bookingId &&
-          (err?.response?.status === 404 || err?.response?.status === 400)
-        ) {
+        if (bookingId && isRetryableDownloadError(err)) {
           await waitAndDownload(ticketId, bookingId, 'pdf');
         } else {
           toastError(
@@ -163,10 +186,7 @@ export function useTicketDownload() {
         await TicketsService.downloadTicketPng(ticketId);
         toastSuccess('Ticket image downloaded!');
       } catch (err) {
-        if (
-          bookingId &&
-          (err?.response?.status === 404 || err?.response?.status === 400)
-        ) {
+        if (bookingId && isRetryableDownloadError(err)) {
           await waitAndDownload(ticketId, bookingId, 'png');
         } else {
           toastError(
