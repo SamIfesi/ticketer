@@ -263,7 +263,7 @@ export default function TicketDetailPage() {
             <div className="bg-card border border-border rounded-card overflow-hidden shadow-md">
               {/* Banner */}
               <div
-                className="relative h-44 overflow-hidden"
+                className="relative h-50 overflow-hidden"
                 style={{ background: BANNER_GRADIENTS[gradientIndex] }}
               >
                 {ticket?.banner_image && (
