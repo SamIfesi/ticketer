@@ -14,7 +14,7 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const userAgent = request.headers.get('user-agent') || '';
-    const backendUrl = env.BACKEND_URL || 'https://api.ticketer.website';
+    const backendUrl = env.BACKEND_URL || 'https://api-railway.ticketer.website';
 
     // 1. Intercept Sitemap
     if (url.pathname === '/sitemap.xml') {
