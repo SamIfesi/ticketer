@@ -61,7 +61,7 @@ function BookingRow({ booking, onView }) {
   return (
     <tr
       onClick={() => onView(booking.id)}
-      className="border-t border-border hover:bg-main-bg transition-colors duration-150"
+      className="border-t border-border hover:bg-main-bg transition-colors duration-150 cursor-pointer"
     >
       <td className="px-4 py-3.5">
         <div className="flex items-center gap-3">
