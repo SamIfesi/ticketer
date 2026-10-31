@@ -33,6 +33,8 @@ export default function BookingDetailPage() {
   const event = booking?.event ?? {};
   const tickets = booking?.tickets ?? [];
   const isPaid = booking?.payment_status === 'paid';
+  const ticketsId = tickets[0]?.ticket_number
+  const bookingId = booking?.booking_number;
 
   return (
     <div className="flex flex-col min-h-screen bg-main-bg">
@@ -49,7 +51,7 @@ export default function BookingDetailPage() {
           </Link>
           <span className="text-muted">/</span>
           <span className="text-primary font-medium">
-            Booking #{String(id).padStart(6, '0')}
+            Booking ID: {bookingId}
           </span>
         </div>
 
@@ -127,7 +129,7 @@ export default function BookingDetailPage() {
                     {tickets.length} Ticket{tickets.length !== 1 ? 's' : ''}
                   </h2>
                   <DownloadTicketButton
-                    ticketId={tickets.id}
+                    ticketId={tickets?.ticket_number}
                     variant="link"
                     size="sm"
                   />
@@ -141,7 +143,7 @@ export default function BookingDetailPage() {
                       className="flex items-center justify-between py-3 hover:bg-main-bg transition-colors rounded-btn px-2 -mx-2"
                     >
                       <span className="text-sm font-semibold text-primary">
-                        Ticket #{String(t.id).padStart(6, '0')}
+                        Ticket ID: {ticketsId}
                       </span>
                       <Badge status={t.is_used ? 'used' : 'valid'} size="sm" />
                     </Link>
