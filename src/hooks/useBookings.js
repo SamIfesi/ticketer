@@ -42,65 +42,83 @@ export function useBookings() {
   // ── Step 1: Initiate booking ──────────────────────────────────
   // Creates a pending booking on the backend and stores the Paystack
   // details for the popup. Does NOT open the popup — the component does that.
-  const initiateBooking = useCallback(async ({ ticketTypeId, quantity }) => {
-  setPayLoading(true);
-  setPayError(null);
-  setPendingBooking(null);
-  try {
-    // step 1 check  for existing pending booking for this ticket type and quantity
-    const resumeRes = await BookingsService.resumeBooking({ ticketTypeId, quantity });
+  const initiateBooking = useCallback(
+    async ({ ticketTypeId, quantity }) => {
+      setPayLoading(true);
+      setPayError(null);
+      setPendingBooking(null);
+      try {
+        // step 1 check  for existing pending booking for this ticket type and quantity
+        const resumeRes = await BookingsService.resumeBooking({
+          ticketTypeId,
+          quantity,
+        });
 
-    if (resumeRes.has_pending) {
-      setPendingBooking(resumeRes);
-      return resumeRes;
-    }
+        if (resumeRes.already_paid) {
+          toastSuccess(
+            'Your previous payment was confirmed. Your ticket is ready!'
+          );
+          navigate('/my-tickets');
+          return null;
+        }
 
-    // step 2 No resumable booking - create new one
-    const data = await BookingsService.createBooking({
-      ticketTypeId,
-      quantity,
-    });
+        if (resumeRes.has_pending) {
+          setPendingBooking(resumeRes);
+          return resumeRes;
+        }
 
-    // Free ticket — already issued, skip Paystack popup
-    if (data.free) {
-      toastSuccess('Your free ticket has been issued!');
-      navigate(`/my-tickets`);
-      return null;
-    }
+        // step 2 No resumable booking - create new one
+        const data = await BookingsService.createBooking({
+          ticketTypeId,
+          quantity,
+        });
 
-    setPendingBooking(data);
-    return data;
-  } catch (err) {
-    const msg = err?.response?.data?.message ?? 'Could not initiate booking.';
-    setPayError(msg);
-    toastError(msg);
-    return null;
-  } finally {
-    setPayLoading(false);
-  }
-}, [navigate, toastError, toastSuccess]);
+        // Free ticket — already issued, skip Paystack popup
+        if (data.free) {
+          toastSuccess('Your free ticket has been issued!');
+          navigate(`/my-tickets`);
+          return null;
+        }
+
+        setPendingBooking(data);
+        return data;
+      } catch (err) {
+        const msg =
+          err?.response?.data?.message ?? 'Could not initiate booking.';
+        setPayError(msg);
+        toastError(msg);
+        return null;
+      } finally {
+        setPayLoading(false);
+      }
+    },
+    [navigate, toastError, toastSuccess]
+  );
 
   // ── Step 2: Confirm payment ───────────────────────────────────
   // Called from the Paystack popup's onSuccess callback.
   // Verifies the payment with the backend and redirects to success.
-  const confirmPayment = useCallback(async (reference) => {
-    setPayLoading(true);
-    setPayError(null);
-    try {
-      const data = await BookingsService.verifyPayment(reference);
-      setPendingBooking(null);
-      toastSuccess('Payment confirmed! Your tickets have been issued.');
-      // Navigate to the booking detail page so they can see their tickets
-      navigate(`/bookings/${data.booking_id}`);
-    } catch (err) {
-      const msg =
-        err?.response?.data?.message ?? 'Payment verification failed.';
-      setPayError(msg);
-      toastError(msg);
-    } finally {
-      setPayLoading(false);
-    }
-  }, [navigate, toastError, toastSuccess]);
+  const confirmPayment = useCallback(
+    async (reference) => {
+      setPayLoading(true);
+      setPayError(null);
+      try {
+        const data = await BookingsService.verifyPayment(reference);
+        setPendingBooking(null);
+        toastSuccess('Payment confirmed! Your tickets have been issued.');
+        // Navigate to the booking detail page so they can see their tickets
+        navigate(`/bookings/${data.booking_id}`);
+      } catch (err) {
+        const msg =
+          err?.response?.data?.message ?? 'Payment verification failed.';
+        setPayError(msg);
+        toastError(msg);
+      } finally {
+        setPayLoading(false);
+      }
+    },
+    [navigate, toastError, toastSuccess]
+  );
 
   // ── Called if the user closes the Paystack popup ──────────────
   function cancelPayment() {
@@ -123,17 +141,20 @@ export function useBookings() {
   }, [toastError]);
 
   // ── Fetch single booking (with tickets) ──────────────────────
-  const fetchBooking = useCallback(async (id) => {
-    setBookingLoading(true);
-    try {
-      const data = await BookingsService.getBooking(id);
-      setBooking(data.booking);
-    } catch (err) {
-      toastError(err?.response?.data?.message ?? 'Booking not found.');
-    } finally {
-      setBookingLoading(false);
-    }
-  }, [toastError]);
+  const fetchBooking = useCallback(
+    async (id) => {
+      setBookingLoading(true);
+      try {
+        const data = await BookingsService.getBooking(id);
+        setBooking(data.booking);
+      } catch (err) {
+        toastError(err?.response?.data?.message ?? 'Booking not found.');
+      } finally {
+        setBookingLoading(false);
+      }
+    },
+    [toastError]
+  );
 
   return {
     // ── History
