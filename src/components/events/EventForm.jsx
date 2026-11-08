@@ -121,6 +121,33 @@ function TicketTypeRow({ tt, index, onChange, onRemove, disabled }) {
         </div>
       </div>
 
+      {tt.id && (
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-primary select-none">
+            Hold back{' '}
+            <span className="text-muted font-normal">(hidden from buyers)</span>
+          </label>
+          <input
+            type="number"
+            min="0"
+            value={tt.quantity_held ?? 0}
+            onChange={(e) => onChange(index, 'quantity_held', e.target.value)}
+            disabled={disabled}
+            className="w-full h-12 px-4 bg-main-bg text-primary border border-border rounded-card text-sm focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent transition-colors disabled:opacity-50"
+          />
+          <p className="text-xs text-muted">
+            Buyers will see{' '}
+            {Math.max(
+              0,
+              (parseInt(tt.quantity || 0, 10) || 0) -
+                (parseInt(tt.quantity_sold || 0, 10) || 0) -
+                (parseInt(tt.quantity_held || 0, 10) || 0)
+            )}{' '}
+            available. Lower this number any time to release them.
+          </p>
+        </div>
+      )}
+
       {/* Description */}
       <div className="flex flex-col gap-1.5">
         <label className="text-sm font-medium text-primary select-none">
@@ -145,6 +172,7 @@ const EMPTY_TICKET = {
   name: '', 
   price: 0, 
   quantity: '', 
+  quantity_held: 0,
   description: '', 
   sales_end_at: '' 
 };
