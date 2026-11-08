@@ -8,6 +8,8 @@ import Navbar from '../../components/layout/Navbar';
 import Sidebar from '../../components/layout/Sidebar';
 import Footer from '../../components/layout/Footer';
 import EventForm from '../../components/events/EventForm';
+import { ConfirmModal } from '../../components/ui/Modal';
+import { formatCurrency } from '../../utils/formatCurrency';
 
 function toInputDate(str) {
   if (!str) return '';
@@ -32,6 +34,8 @@ export default function EditEventPage() {
 
   const { hasPaymentDetails, paymentDetailsLoading, fetchPaymentDetails } =
     useOrganizerPayment();
+
+  const [pendingConfirm, setPendingConfirm] = useState(null); // { formData, changes }
 
   useEffect(() => {
     fetchPaymentDetails();
@@ -69,20 +73,29 @@ export default function EditEventPage() {
         name: tt.name ?? '',
         price: tt.price ?? 0,
         quantity: tt.quantity ?? '',
+        quantity_held: tt.quantity_held ?? 0,
+        quantity_sold: tt.quantity_sold ?? 0,
         description: tt.description ?? '',
         sales_end_at: toInputDate(tt.sales_end_at),
       })),
     };
   }, [event]);
 
-  async function handleSubmit(formData) {
-    await updateEvent(event.id, formData, {
-      onSuccess: () => {
-        fetchMyEvent(slug);
-        navigate(`/organizer/events/${event.slug}`);
-      },
-    });
+  async function handleSubmit(formData, confirmed = false) {
+    await updateEvent(
+      event.id,
+      confirmed ? { ...formData, confirm_price_change: true } : formData,
+      {
+        onSuccess: () => {
+          setPendingConfirm(null);
+          fetchMyEvent(slug);
+          navigate(`/organizer/events/${event.slug}`);
+        },
+        onPriceConfirm: (changes) => setPendingConfirm({ formData, changes }),
+      }
+    );
   }
+
 
   return (
     <div className="flex flex-col min-h-screen bg-main-bg">
@@ -167,6 +180,28 @@ export default function EditEventPage() {
             />
           )}
         </div>
+        
+        <ConfirmModal
+        isOpen={Boolean(pendingConfirm)}
+        onClose={() => setPendingConfirm(null)}
+        onConfirm={() => handleSubmit(pendingConfirm.formData, true)}
+        loading={loading}
+        title="Change ticket price?"
+        description={
+          (pendingConfirm?.changes ?? [])
+            .map(
+              (c) =>
+                `${c.tier}: ${formatCurrency(c.old_price)} → ${formatCurrency(c.new_price)}` +
+                (c.quantity_sold ? ` (${c.quantity_sold} already sold)` : '')
+            )
+            .join(' · ') +
+          ((pendingConfirm?.changes ?? []).some((c) => c.goes_free)
+            ? ' — Setting a tier to ₦0 lets anyone book it for free. To make stock look scarcer, use "Hold back" instead.'
+            : ' — Past sales keep the price they were bought at.')
+        }
+        confirmLabel="Yes, change price"
+        danger
+      />
       </main>
       <Footer variant="minimal" />
     </div>
