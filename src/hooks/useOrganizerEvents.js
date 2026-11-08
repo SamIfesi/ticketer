@@ -131,7 +131,7 @@ export function useOrganizerEvents() {
   // ── Update event ─────────────────────────────────────────────
   // `id` MUST be the numeric event.id — never a slug.
   const updateEvent = useCallback(
-    async (id, eventData, { onSuccess } = {}) => {
+    async (id, eventData, { onSuccess, onPriceConfirm } = {}) => {
       setLoading(true);
       resetErrors();
 
@@ -152,6 +152,14 @@ export function useOrganizerEvents() {
 
         onSuccess?.(data.event);
       } catch (err) {
+        const data = err?.response?.data;
+        if (
+          err?.response?.status === 409 &&
+          data?.code === 'PRICE_CHANGE_CONFIRMATION_REQUIRED'
+        ) {
+          onPriceConfirm?.(data.price_changes ?? []);
+          return;
+        }
         toastError(extractError(err));
       } finally {
         setLoading(false);
