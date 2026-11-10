@@ -24,7 +24,7 @@ import {
   isEventPast,
 } from '../../utils/formatDate';
 import { formatCurrency } from '../../utils/formatCurrency';
-import EventServices from '../../services/events.service';
+import EventsServices from '../../services/events.service';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import Sidebar from '../../components/layout/Sidebar';
@@ -191,10 +191,6 @@ export default function EventDetailPage() {
       active = false;
     };
   }, [canSeeRevenue, event?.id]);
-
-  useEffect(() => {
-    if (id) fetchEvent(id);
-  }, [id, fetchEvent]);
 
   const isPast = event
     ? isEventPast(event.end_date ?? event.start_date)
