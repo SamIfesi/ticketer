@@ -24,6 +24,7 @@ import {
   isEventPast,
 } from '../../utils/formatDate';
 import { formatCurrency } from '../../utils/formatCurrency';
+import EventServices from '../../services/events.service';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import Sidebar from '../../components/layout/Sidebar';
@@ -61,8 +62,7 @@ function PageSkeleton() {
 function RevenuePannel({ ticketTypes }) {
   // Calculate total revenue: sum of (price × quantity_sold) per ticket type
   const revenue = (ticketTypes ?? []).reduce(
-    (acc, tt) =>
-      acc + parseFloat(tt.price ?? 0) * parseInt(tt.quantity_sold ?? 0, 10),
+    (acc, tt) => acc + Number(tt.revenue ?? 0),
     0
   );
 
@@ -121,12 +121,10 @@ function RevenuePannel({ ticketTypes }) {
       {(ticketTypes ?? []).length > 0 && (
         <div className="flex flex-col gap-0 divide-y divide-border">
           {ticketTypes.map((tt) => {
-            const typeRevenue =
-              parseFloat(tt.price ?? 0) * parseInt(tt.quantity_sold ?? 0, 10);
+            const typeRevenue = Number(tt.revenue ?? 0);
             const available =
               parseInt(tt.quantity ?? 0, 10) -
               parseInt(tt.quantity_sold ?? 0, 10);
-            const isFree = parseFloat(tt.price) === 0;
 
             return (
               <div key={tt.id} className="py-3">
@@ -136,18 +134,17 @@ function RevenuePannel({ ticketTypes }) {
                       {tt.name}
                     </p>
                     <p className="text-[11px] text-muted mt-0.5">
-                      {parseInt(tt.quantity_sold ?? 0, 10).toLocaleString()}{' '}
-                      sold
+                      {tt.paid_sold} paid {tt.free_sold > 0 && `${tt.free_sold} free`}
                       {' · '}
                       {available.toLocaleString()} left
                     </p>
                   </div>
                   <div className="text-right shrink-0">
                     <p className="text-xs font-bold text-primary">
-                      {isFree ? 'Free' : formatCurrency(typeRevenue)}
+                      {formatCurrency(typeRevenue)}
                     </p>
                     <p className="text-[11px] text-muted">
-                      {isFree ? '—' : `@ ${formatCurrency(tt.price)}`}
+                      list price: {formatCurrency(tt.price)}
                     </p>
                   </div>
                 </div>
@@ -174,10 +171,27 @@ export default function EventDetailPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { event, eventLoading, eventError, fetchEvent } = useEvents();
   const { initiateBooking, payLoading } = useBookings();
-  
+  const [ownTypes, setOwnTypes] = useState(null);
+
   const isEventOwner = user?.id === event?.organizer_id;
-  const canSeeRevenue = isEventOwner || role === ROLES.ADMIN || role === ROLES.DEV;
-  
+  const canSeeRevenue =
+    isEventOwner || role === ROLES.ADMIN || role === ROLES.DEV;
+
+  useEffect(() => {
+    if (id) fetchEvent(id);
+  }, [id, fetchEvent]);
+
+  useEffect(() => {
+    if (!canSeeRevenue || !event?.id) return;
+    let active = true;
+    EventsService.getMyEvent(event.id)
+      .then((d) => active && setOwnTypes(d.event?.ticket_types ?? []))
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [canSeeRevenue, event?.id]);
+
   useEffect(() => {
     if (id) fetchEvent(id);
   }, [id, fetchEvent]);
@@ -538,10 +552,11 @@ export default function EventDetailPage() {
                 {/* ── Right: ticket panel + revenue (if privileged) ── */}
                 <div className="flex flex-col gap-4 lg:sticky lg:top-24 lg:self-start">
                   {/* Revenue panel — organizer / admin / dev only */}
-                  {canSeeRevenue && (
+                  {canSeeRevenue && ownTypes && (
                     <RevenuePannel
                       event={event}
-                      ticketTypes={event.ticket_types ?? []}
+                      ticketTypes={ownTypes}
+                      // ticketTypes={event.ticket_types ?? []}
                     />
                   )}
 
