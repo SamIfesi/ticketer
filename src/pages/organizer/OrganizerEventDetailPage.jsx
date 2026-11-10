@@ -60,7 +60,7 @@ export default function OrganizerEventDetailPage() {
   const ticketTypes = event?.ticket_types ?? [];
   const totalSold = ticketTypes.reduce((acc, tt) => acc + (tt.quantity_sold ?? 0), 0);
   const totalQty = ticketTypes.reduce((acc, tt) => acc + (tt.quantity ?? 0), 0);
-  const estRevenue = ticketTypes.reduce((acc, tt) => acc + Number(tt.revenue ?? 0), 0);
+  const estRevenue = ticketTypes.reduce((acc, tt) => acc + (tt.quantity_sold ?? 0) * (tt.price ?? 0), 0);
 
   return (
     <div className="flex flex-col min-h-screen bg-main-bg">
