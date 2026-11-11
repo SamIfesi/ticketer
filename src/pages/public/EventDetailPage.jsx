@@ -24,7 +24,7 @@ import {
   isEventPast,
 } from '../../utils/formatDate';
 import { formatCurrency } from '../../utils/formatCurrency';
-import EventsServices from '../../services/events.service';
+import EventsService from '../../services/events.service';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import Sidebar from '../../components/layout/Sidebar';
@@ -186,7 +186,7 @@ export default function EventDetailPage() {
     let active = true;
     EventsService.getMyEvent(event.id)
       .then((d) => active && setOwnTypes(d.event?.ticket_types ?? []))
-      .catch(() => {});
+      .catch(() => {console.error});
     return () => {
       active = false;
     };
