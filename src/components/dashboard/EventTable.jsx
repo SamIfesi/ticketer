@@ -255,7 +255,7 @@ export default function EventTable({
           </thead>
           <tbody>
             {loading ? (
-              Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
+              Array.from({ length: 10 }).map((_, i) => <SkeletonRow key={i} />)
             ) : events.length > 0 ? (
               events.map((event) => (
                 <EventRow
