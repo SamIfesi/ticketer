@@ -59,12 +59,9 @@ function PageSkeleton() {
 }
 
 // ── Revenue panel (admin + organizer only) ────────────────────
-function RevenuePannel({ ticketTypes }) {
+function RevenuePannel({ ticketTypes, totalRevenue }) {
   // Calculate total revenue: sum of (price × quantity_sold) per ticket type
-  const revenue = (ticketTypes ?? []).reduce(
-    (acc, tt) => acc + Number(tt.total_revenue ?? 0),
-    0
-  );
+  const revenue = Number(totalRevenue ?? 0);
 
   const totalSold = (ticketTypes ?? []).reduce(
     (acc, tt) => acc + parseInt(tt.quantity_sold ?? 0, 10),
@@ -172,7 +169,7 @@ export default function EventDetailPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { event, eventLoading, eventError, fetchEvent } = useEvents();
   const { initiateBooking, payLoading } = useBookings();
-  const [ownTypes, setOwnTypes] = useState(null);
+  const [ownEvent, setOwnEvent] = useState(null);
 
   const isEventOwner = user?.id === event?.organizer_id;
   const canSeeRevenue =
@@ -186,7 +183,7 @@ export default function EventDetailPage() {
     if (!canSeeRevenue || !event?.id) return;
     let active = true;
     EventsService.getMyEvent(event.id)
-      .then((d) => active && setOwnTypes(d.event?.ticket_types ?? []))
+      .then((d) => active && setOwnEvent(d.event ?? []))
       .catch(() => {
         console.error;
       });
@@ -551,11 +548,11 @@ export default function EventDetailPage() {
                 {/* ── Right: ticket panel + revenue (if privileged) ── */}
                 <div className="flex flex-col gap-4 lg:sticky lg:top-24 lg:self-start">
                   {/* Revenue panel — organizer / admin / dev only */}
-                  {canSeeRevenue && ownTypes && (
+                  {canSeeRevenue && ownEvent && (
                     <RevenuePannel
-                      event={event}
-                      ticketTypes={ownTypes}
-                      // ticketTypes={event.ticket_types ?? []}
+                      // event={event}
+                      ticketTypes={ownEvent.ticket_types ?? []}
+                      totalRevenue={ownEvent.total_revenue}
                     />
                   )}
 
