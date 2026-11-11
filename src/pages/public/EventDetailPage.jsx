@@ -139,7 +139,7 @@ function RevenuePannel({ ticketTypes, totalRevenue }) {
                   </div>
                   <div className="text-right shrink-0">
                     <p className="text-xs font-bold text-primary">
-                      {formatCurrency(typeRevenue)}
+                       {tt.revenue != null ? formatCurrency(Number(tt.revenue)) : '—'}
                     </p>
                     <p className="text-[11px] text-muted">
                       list price: {formatCurrency(tt.price)}
