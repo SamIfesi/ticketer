@@ -62,7 +62,7 @@ function PageSkeleton() {
 function RevenuePannel({ ticketTypes }) {
   // Calculate total revenue: sum of (price × quantity_sold) per ticket type
   const revenue = (ticketTypes ?? []).reduce(
-    (acc, tt) => acc + Number(tt.revenue ?? 0),
+    (acc, tt) => acc + Number(tt.total_revenue ?? 0),
     0
   );
 
@@ -121,7 +121,7 @@ function RevenuePannel({ ticketTypes }) {
       {(ticketTypes ?? []).length > 0 && (
         <div className="flex flex-col gap-0 divide-y divide-border">
           {ticketTypes.map((tt) => {
-            const typeRevenue = Number(tt.revenue ?? 0);
+            const typeRevenue = Number(tt.total_revenue ?? 0);
             const available =
               parseInt(tt.quantity ?? 0, 10) -
               parseInt(tt.quantity_sold ?? 0, 10);
@@ -134,7 +134,8 @@ function RevenuePannel({ ticketTypes }) {
                       {tt.name}
                     </p>
                     <p className="text-[11px] text-muted mt-0.5">
-                      {tt.paid_sold} paid {tt.free_sold > 0 && `${tt.free_sold} free`}
+                      {tt.paid_sold} paid{' '}
+                      {tt.free_sold > 0 && `${tt.free_sold} free`}
                       {' · '}
                       {available.toLocaleString()} left
                     </p>
@@ -186,7 +187,9 @@ export default function EventDetailPage() {
     let active = true;
     EventsService.getMyEvent(event.id)
       .then((d) => active && setOwnTypes(d.event?.ticket_types ?? []))
-      .catch(() => {console.error});
+      .catch(() => {
+        console.error;
+      });
     return () => {
       active = false;
     };
